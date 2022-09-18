@@ -4,14 +4,14 @@ import { CharacterInfo } from "../Components/CharacterInfo"
 import { FilterModal } from "../Components/FilterModal"
 import { Modal } from "../Components/Modal"
 import { SearchBar } from "../Components/SearchBar"
-import { useCharacterFilter } from "../hooks/characterFilter"
 import { useCharacters } from "../hooks/characters"
-import { useCharacterSearch } from "../hooks/characterSearch"
 import { ICharacter } from "../models"
+import { CSSTransition } from 'react-transition-group';
+import  '../Components/App.css'
 
 export function CharacterPage() {
-  const {character, loading, error, varCharacter, searchCharacter, setVarCharacter} = useCharacters()
-  const {fmodalVision, setFModalVision} = useCharacterFilter()
+  const {character, loading, error, varCharacter, searchCharacter, setVarCharacter, filterCharacter} = useCharacters()
+  const [fmodalVision, setFModalVision] = useState(false)
   const [modal, setModal] = useState(false)
   const [id, setId] = useState(0)
 
@@ -24,6 +24,10 @@ export function CharacterPage() {
     searchCharacter(character)
   }
 
+  const openHandlerFilter = (character: ICharacter[]) => {
+    filterCharacter(character)
+  }
+
   const clearHandler = () => {
     setVarCharacter(character)
   }
@@ -34,14 +38,23 @@ export function CharacterPage() {
     <div className="container mx-auto max-w-1xl pt-5">
       {loading && <p className="text-center font-bold">Loading data...</p>}
       {error && <p className="text-center font-bold">{error}</p>}
-      <SearchBar onOpen={() => setFModalVision(true)} onSearch={openHandlerSearch} onClear={clearHandler}/>
+      <SearchBar onOpenFilter={() => setFModalVision(true)} onSearch={openHandlerSearch} onClear={clearHandler}/>
       <div className="mx-auto max-w-1xl flex flex-wrap justify-center">
           {(varCharacter).map(charact => <Character character={charact} key={charact.id} onOpen={openHandler}/>)} 
       </div>
+      <CSSTransition in={modal} timeout={2000} classNames="my-node">
+      <div className="my-node">
       { modal && <Modal onClose={() => setModal(false)}>
-      {varCharacter.filter(character => character.id == id).map(filteredCharacter => (<CharacterInfo character={filteredCharacter}/>))}
+      {varCharacter.filter(character => character.id == id).map(filteredCharacter => (<CharacterInfo character={filteredCharacter} key={filteredCharacter.id}/>))}
       </Modal>}
-      {(fmodalVision) && <FilterModal onClose={() => setFModalVision(false)}/>}
+      </div>
+      </CSSTransition>
+      <CSSTransition in={fmodalVision} timeout={2000} classNames="my-node" unmountOnExit mountOnEnter>
+      <div className="my-node">
+      {fmodalVision && <FilterModal onClose={() => setFModalVision(false)} onFilter={openHandlerFilter}/>}
+      </div>
+      </CSSTransition>
+      {/* <EpisodesCharacter/> */}
     </div>
   );
 }
